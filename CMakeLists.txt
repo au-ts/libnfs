@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.2)
 
+set(CMAKE_C_COMPILER aarch64-none-elf-gcc)
+set(CMAKE_CXX_COMPILER aarch64-none-elf-g++)
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 project(libnfs
         LANGUAGES C
         VERSION 5.0.2)
@@ -13,7 +18,38 @@ set(INSTALL_MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man" CACHE PATH "Installation
 set(INSTALL_PKGCONFIG_DIR "${INSTALL_LIB_DIR}/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
 set(INSTALL_CMAKE_DIR "${INSTALL_LIB_DIR}/cmake/libnfs" CACHE PATH "Installation directory for cmake (.cmake) files")
 
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+set(HAVE_ARPA_INET_H 1)
+set(HAVE_CLOCK_GETTIME 1)
+set(HAVE_DLFCN_H 1)
+set(HAVE_FUSE_H 1)
+set(HAVE_INTTYPES_H 1)
+set(HAVE_MEMORY_H 1)
+set(HAVE_NETDB_H 1)
+set(HAVE_NETINET_IN_H 1)
+set(HAVE_NETINET_TCP_H 1)
+set(HAVE_NET_IF_H 1)
+set(HAVE_POLL_H 1)
+set(HAVE_SOCKADDR_STORAGE 1)
+set(HAVE_STDINT_H 1)
+set(HAVE_STDLIB_H 1)
+set(HAVE_STRINGS_H 1)
+set(HAVE_STRINGS_H 1)
+set(HAVE_STRING_H 1)
+set(HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1)
+set(HAVE_SYS_IOCTL_H 1)
+set(HAVE_SYS_SOCKET_H 1)
+set(HAVE_SYS_STATVFS_H 1)
+set(HAVE_SYS_STAT_H 1)
+set(HAVE_SYS_SYSMACROS_H 1)
+set(HAVE_SYS_TIME_H 1)
+set(HAVE_TIME_H 1)
+set(HAVE_SYS_TYPES_H 1)
+set(HAVE_SYS_VFS_H 1)
+set(HAVE_TALLOC_TEVENT 1)
+set(HAVE_UNISTD_H 1)
+set(HAVE_UTIME_H 1)
+
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(ENABLE_TESTS "Build and run test programs" OFF)
 option(ENABLE_DOCUMENTATION "Build Documentation" OFF)
 option(ENABLE_UTILS "Build util programs" OFF)
@@ -28,10 +64,11 @@ include(cmake/ConfigureChecks.cmake)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}
                     include
-                    include/nfsc)
+                    include/nfsc
+                    "/host/sDDF/echo_server/musl/build/include")
 
 # list of system libs (sockets/etc) to be linked on this system
-set(SYSTEM_LIBRARIES "")
+set(SYSTEM_LIBRARIES "/host/sDDF/echo_server/musl/build/lib/libc.a")
 # list of core (static) libraries built in current configuration (used by lib/CMakeLists.txt)
 set(CORE_LIBRARIES "" CACHE INTERNAL "")
 
