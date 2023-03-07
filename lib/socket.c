@@ -103,19 +103,19 @@
 static int
 rpc_reconnect_requeue(struct rpc_context *rpc);
 
-void write_red(char *str);
-// {
-//     sel4cp_dbg_puts("\033[0;31m");
-//     sel4cp_dbg_puts(str);
-//     sel4cp_dbg_puts("\033[0m");
-// }
+void write_red(char *str)
+{
+    sel4cp_dbg_puts("\033[0;31m");
+    sel4cp_dbg_puts(str);
+    sel4cp_dbg_puts("\033[0m");
+}
 
-void write_green(char *str);
-// {
-//     sel4cp_dbg_puts("\033[0;32m");
-//     sel4cp_dbg_puts(str);
-//     sel4cp_dbg_puts("\033[0m");
-// }
+void write_green(char *str)
+{
+    sel4cp_dbg_puts("\033[0;32m");
+    sel4cp_dbg_puts(str);
+    sel4cp_dbg_puts("\033[0m");
+}
 
 static int
 create_socket(int domain, int type, int protocol)
@@ -454,19 +454,19 @@ maybe_call_connect_cb(struct rpc_context *rpc, int status)
 {
 	rpc_cb tmp_cb = rpc->connect_cb;
     
-    write_green("maybe_call_connect_cb\n");
-        write_pointer_hex(rpc);
-        write_pointer_hex(rpc->connect_cb);
-        write_pointer_hex(tmp_cb);
-        write_pointer_hex(rpc->connect_data);
-        write_pointer_hex(rpc->error_string);
-    write_green("maybe_call_connect_cb\n");
+    // write_green("maybe_call_connect_cb\n");
+    //     write_pointer_hex(rpc);
+    //     write_pointer_hex(rpc->connect_cb);
+    //     write_pointer_hex(tmp_cb);
+    //     write_pointer_hex(rpc->connect_data);
+    //     write_pointer_hex(rpc->error_string);
+    // write_green("maybe_call_connect_cb\n");
 
 	if (rpc->connect_cb == NULL) {
-        write_red("rpc->connect_cb == NULL\n");
+        // write_red("rpc->connect_cb == NULL\n");
 		return;
 	}
-    write_green("rpc->connect_cb != NULL\n");
+    // write_green("rpc->connect_cb != NULL\n");
 
 	rpc->connect_cb = NULL;
 	tmp_cb(rpc, status, rpc->error_string, rpc->connect_data);
