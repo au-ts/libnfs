@@ -215,19 +215,39 @@ struct rpc_pdu *rpc_allocate_pdu(struct rpc_context *rpc, int program, int versi
 	return rpc_allocate_pdu2(rpc, program, version, procedure, cb, private_data, zdr_decode_fn, zdr_decode_bufsize, 0);
 }
 
+void sel4cp_dbg_putc(char c);
+
+void write_ptr_addr(void *ptr) {
+    char buf[20] = {0};
+    sprintf(buf, "%p", ptr);
+    write_bright_red(buf);
+    sel4cp_dbg_putc('\n');
+}
+
 void rpc_free_pdu(struct rpc_context *rpc, struct rpc_pdu *pdu)
 {
+    // TODO: fix freeing and malloc
+    // write_bright_red("rpc_free_pdu: pdu\n");
+    // write_ptr_addr(pdu);
+    // write_bright_red("rpc_free_pdu: rpc\n");
+    // write_ptr_addr(rpc);
 	assert(rpc->magic == RPC_CONTEXT_MAGIC);
 
-	free(pdu->outdata.data);
+    // write_bright_red("rpc_free_pdu: pdu->outdata.data\n");
+    // write_ptr_addr(&pdu->outdata);
+    // write_ptr_addr(pdu->outdata.data);
+	// free(pdu->outdata.data);
 
 	if (pdu->zdr_decode_buf != NULL) {
-		zdr_free(pdu->zdr_decode_fn, pdu->zdr_decode_buf);
+        write_bright_red("rpc_free_pdu: zdr_free\n");
+        // zdr_free(pdu->zdr_decode_fn, pdu->zdr_decode_buf);
 	}
 
-	zdr_destroy(&pdu->zdr);
+    write_bright_red("rpc_free_pdu: zdr_destroy\n");
+	// zdr_destroy(&pdu->zdr);
 
-	free(pdu);
+    write_bright_red("rpc_free_pdu: free\n");
+	// free(pdu);
 }
 
 void rpc_set_next_xid(struct rpc_context *rpc, uint32_t xid)
@@ -522,8 +542,17 @@ static int rpc_process_call(struct rpc_context *rpc, ZDR *zdr)
         return rpc_send_error_reply(rpc, &call, PROC_UNAVAIL, 0 ,0);
 }
 
+void sel4cp_dbg_puts(char *s);
+
+void write_bright_red(char *s) {
+    sel4cp_dbg_puts("\033[1;31m");
+    sel4cp_dbg_puts(s);
+    sel4cp_dbg_puts("\033[0m");
+}
+
 int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
 {
+    write_bright_red("rpc_process_pdu start\n");
 	struct rpc_pdu *pdu, *prev_pdu;
 	struct rpc_queue *q;
 	ZDR zdr;
@@ -537,15 +566,21 @@ int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
 
 	memset(&zdr, 0, sizeof(ZDR));
 
+    write_bright_red("rpc_process_pdu 1\n");
+
 	zdrmem_create(&zdr, buf, size, ZDR_DECODE);
+    write_bright_red("rpc_process_pdu 2\n");
 	if (rpc->is_udp == 0) {
+        write_bright_red("rpc_process_pdu 2.1\n");
 		if (zdr_int(&zdr, &recordmarker) == 0) {
 			rpc_set_error(rpc, "zdr_int reading recordmarker failed");
 			zdr_destroy(&zdr);
 			return -1;
 		}
+        write_bright_red("rpc_process_pdu 2.2\n");
 		if (!(recordmarker&0x80000000)) {
 			zdr_destroy(&zdr);
+            write_bright_red("rpc_process_pdu 2.3\n");
 			if (rpc_add_fragment(rpc, buf+4, size-4) != 0) {
 				rpc_set_error(rpc, "Failed to queue fragment for reassembly.");
 				return -1;
@@ -553,13 +588,14 @@ int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
 			return 0;
 		}
 	}
-
+    
+    write_bright_red("rpc_process_pdu 2.5\n");    
 	/* reassembly */
 	if (recordmarker != 0 && rpc->fragments != NULL) {
 		struct rpc_fragment *fragment;
 		uint32_t total = size - 4;
 		char *ptr;
-
+        write_bright_red("rpc_process_pdu 3\n");
 		zdr_destroy(&zdr);
 		for (fragment = rpc->fragments; fragment; fragment = fragment->next) {
 			total += fragment->size;
@@ -568,7 +604,8 @@ int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
                                 rpc_free_all_fragments(rpc);
                                 return -1;
                         }
-		}
+		}  
+        write_bright_red("rpc_process_pdu 4\n");
 
 		reasbuf = malloc(total);
 		if (reasbuf == NULL) {
@@ -585,6 +622,7 @@ int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
 		zdrmem_create(&zdr, reasbuf, total, ZDR_DECODE);
 		rpc_free_all_fragments(rpc);
 	}
+    write_bright_red("rpc_process_pdu 5\n");
 
         if (rpc->is_server_context) {
                 int ret;
@@ -594,6 +632,7 @@ int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
                 if (reasbuf != NULL) {
                         free(reasbuf);
                 }
+                write_bright_red("rpc_process_pdu end, SHOULD NOT BE HERE\n");
                 return ret;
         }
 
@@ -640,16 +679,26 @@ int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
                         nfs_mt_mutex_unlock(&rpc->rpc_mutex);
                 }
 #endif /* HAVE_MULTITHREADING */
+        write_bright_red("rpc_process_pdu 6\n");
 		if (rpc_process_reply(rpc, pdu, &zdr) != 0) {
 			rpc_set_error(rpc, "rpc_procdess_reply failed");
 		}
+        write_bright_red("rpc_process_pdu 7\n");
 		zdr_destroy(&zdr);
+        write_bright_red("rpc_process_pdu 8\n");
+        if (rpc == NULL) {
+            write_bright_red("rpc_process_pdu BROKEN RPC CONTEXT NULL\n");
+            return -1;
+        }
 		if (rpc->is_udp == 0 || rpc->is_broadcast == 0) {
+            write_bright_red("rpc_process_pdu 8.1\n");
 			rpc_free_pdu(rpc, pdu);
 		}
+        write_bright_red("rpc_process_pdu 9\n");
 		if (reasbuf != NULL) {
 			free(reasbuf);
 		}
+        write_bright_red("rpc_process_pdu end early 5\n");
 		return 0;
 	}
 #ifdef HAVE_MULTITHREADING
@@ -662,6 +711,7 @@ int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
 	if (reasbuf != NULL) {
 		free(reasbuf);
 	}
+    write_bright_red("rpc_process_pdu end\n");
 	return 0;
 }
 

@@ -103,19 +103,19 @@
 static int
 rpc_reconnect_requeue(struct rpc_context *rpc);
 
-void write_red(char *str)
-{
-    sel4cp_dbg_puts("\033[0;31m");
-    sel4cp_dbg_puts(str);
-    sel4cp_dbg_puts("\033[0m");
-}
+void write_red(char *str);
+// {
+//     sel4cp_dbg_puts("\033[0;31m");
+//     sel4cp_dbg_puts(str);
+//     sel4cp_dbg_puts("\033[0m");
+// }
 
-void write_green(char *str)
-{
-    sel4cp_dbg_puts("\033[0;32m");
-    sel4cp_dbg_puts(str);
-    sel4cp_dbg_puts("\033[0m");
-}
+void write_green(char *str);
+// {
+//     sel4cp_dbg_puts("\033[0;32m");
+//     sel4cp_dbg_puts(str);
+//     sel4cp_dbg_puts("\033[0m");
+// }
 
 static int
 create_socket(int domain, int type, int protocol)
@@ -311,6 +311,9 @@ rpc_write_to_socket(struct rpc_context *rpc)
 }
 
 #define MAX_UDP_SIZE 65536
+
+void labelnum(char *s, uint64_t n);
+
 static int
 rpc_read_from_socket(struct rpc_context *rpc)
 {
@@ -359,6 +362,7 @@ rpc_read_from_socket(struct rpc_context *rpc)
 			pdu_size = 4;
 		} else {
 			pdu_size = rpc_get_pdu_size((void *)&rpc->rm_buf);
+            labelnum("rpc_read_from_socket: pdu_size", pdu_size);
 			if (rpc->inbuf == NULL) {
 				if (pdu_size > NFS_MAX_XFER_SIZE + 4096) {
 					rpc_set_error(rpc, "Incoming PDU "
@@ -383,7 +387,9 @@ rpc_read_from_socket(struct rpc_context *rpc)
 
 		count = recv(rpc->fd, buf + rpc->inpos, pdu_size - rpc->inpos,
                              MSG_DONTWAIT);
-		if (count < 0) {
+        labelnum("rpc_read_from_socket ", count);
+
+        if (count < 0) {
 			if (errno == EINTR || errno == EAGAIN) {
 				break;
 			}
@@ -400,6 +406,7 @@ rpc_read_from_socket(struct rpc_context *rpc)
 		if (rpc->inpos == 4) {
 			/* We have just read the header and there is likely
                          * more data available */
+            sel4cp_dbg_puts("rpc_read_from_socket: rpc->inpos == 4\n");
 			continue;
 		}
 
@@ -414,7 +421,9 @@ rpc_read_from_socket(struct rpc_context *rpc)
 				free(buf);
 				return -1;
 			}
-			free(buf);
+            sel4cp_dbg_puts("Freeing\n");
+            // TODOL fix freeing and malloc
+			// free(buf);
 		}
 	} while (rpc->is_nonblocking && rpc->waitpdu_len > 0);
 
@@ -579,7 +588,7 @@ rpc_service(struct rpc_context *rpc, int revents)
 
 	}
 
-    write_green("rpc maybe connected");
+    // write_green("rpc maybe connected\n");
 	if (rpc->is_connected == 0 && rpc->fd != -1 && (revents & POLLOUT)) {
         write_green("rpc connected");
 		int err = 0;
@@ -606,6 +615,7 @@ rpc_service(struct rpc_context *rpc, int revents)
 	}
 
 	if (revents & POLLIN) {
+        write_green("rpc read from socket\n");
 		if (rpc_read_from_socket(rpc) != 0) {
                         if (rpc->is_server_context) {
                                 return -1;
@@ -616,6 +626,7 @@ rpc_service(struct rpc_context *rpc, int revents)
 	}
 
 	if (revents & POLLOUT && rpc_has_queue(&rpc->outqueue)) {
+        write_green("rpc write to socket\n");
 		if (rpc_write_to_socket(rpc) != 0) {
                         if (rpc->is_server_context) {
                                 return -1;
