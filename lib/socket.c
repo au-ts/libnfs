@@ -103,19 +103,6 @@
 static int
 rpc_reconnect_requeue(struct rpc_context *rpc);
 
-void write_red(char *str)
-{
-    sel4cp_dbg_puts("\033[0;31m");
-    sel4cp_dbg_puts(str);
-    sel4cp_dbg_puts("\033[0m");
-}
-
-void write_green(char *str)
-{
-    sel4cp_dbg_puts("\033[0;32m");
-    sel4cp_dbg_puts(str);
-    sel4cp_dbg_puts("\033[0m");
-}
 
 static int
 create_socket(int domain, int type, int protocol)
@@ -362,7 +349,6 @@ rpc_read_from_socket(struct rpc_context *rpc)
 			pdu_size = 4;
 		} else {
 			pdu_size = rpc_get_pdu_size((void *)&rpc->rm_buf);
-            labelnum("rpc_read_from_socket: pdu_size", pdu_size);
 			if (rpc->inbuf == NULL) {
 				if (pdu_size > NFS_MAX_XFER_SIZE + 4096) {
 					rpc_set_error(rpc, "Incoming PDU "
@@ -387,7 +373,6 @@ rpc_read_from_socket(struct rpc_context *rpc)
 
 		count = recv(rpc->fd, buf + rpc->inpos, pdu_size - rpc->inpos,
                              MSG_DONTWAIT);
-        labelnum("rpc_read_from_socket ", count);
 
         if (count < 0) {
 			if (errno == EINTR || errno == EAGAIN) {
@@ -406,7 +391,6 @@ rpc_read_from_socket(struct rpc_context *rpc)
 		if (rpc->inpos == 4) {
 			/* We have just read the header and there is likely
                          * more data available */
-            sel4cp_dbg_puts("rpc_read_from_socket: rpc->inpos == 4\n");
 			continue;
 		}
 
@@ -421,8 +405,8 @@ rpc_read_from_socket(struct rpc_context *rpc)
 				free(buf);
 				return -1;
 			}
-            sel4cp_dbg_puts("Freeing\n");
-            // TODOL fix freeing and malloc
+
+            // TODO fix freeing and malloc
 			// free(buf);
 		}
 	} while (rpc->is_nonblocking && rpc->waitpdu_len > 0);
@@ -430,43 +414,15 @@ rpc_read_from_socket(struct rpc_context *rpc)
 	return 0;
 }
 
-void sel4cp_dbg_putc(int c);
-void sel4cp_dbg_puts(const char *s);
-void write_pointer_hex(void *ptr) {
-    if (ptr == NULL) {
-        sel4cp_dbg_puts("NULL\n");
-    }
-    sel4cp_dbg_putc('0');
-    sel4cp_dbg_putc('x');
-    for (int i = 0; i < sizeof(void *); i++) {
-        char nibble = ((uintptr_t)ptr >> (4 * (sizeof(void *) - i - 1))) & 0xf;
-        if (nibble < 10) {
-            sel4cp_dbg_putc('0' + nibble);
-        } else {
-            sel4cp_dbg_putc('a' + nibble - 10);
-        }
-    }
-    sel4cp_dbg_putc('\n');
-}
 
 static void
 maybe_call_connect_cb(struct rpc_context *rpc, int status)
 {
 	rpc_cb tmp_cb = rpc->connect_cb;
-    
-    // write_green("maybe_call_connect_cb\n");
-    //     write_pointer_hex(rpc);
-    //     write_pointer_hex(rpc->connect_cb);
-    //     write_pointer_hex(tmp_cb);
-    //     write_pointer_hex(rpc->connect_data);
-    //     write_pointer_hex(rpc->error_string);
-    // write_green("maybe_call_connect_cb\n");
 
 	if (rpc->connect_cb == NULL) {
-        // write_red("rpc->connect_cb == NULL\n");
 		return;
 	}
-    // write_green("rpc->connect_cb != NULL\n");
 
 	rpc->connect_cb = NULL;
 	tmp_cb(rpc, status, rpc->error_string, rpc->connect_data);
@@ -615,7 +571,6 @@ rpc_service(struct rpc_context *rpc, int revents)
 	}
 
 	if (revents & POLLIN) {
-        write_green("rpc read from socket\n");
 		if (rpc_read_from_socket(rpc) != 0) {
                         if (rpc->is_server_context) {
                                 return -1;
@@ -626,7 +581,6 @@ rpc_service(struct rpc_context *rpc, int revents)
 	}
 
 	if (revents & POLLOUT && rpc_has_queue(&rpc->outqueue)) {
-        write_green("rpc write to socket\n");
 		if (rpc_write_to_socket(rpc) != 0) {
                         if (rpc->is_server_context) {
                                 return -1;
