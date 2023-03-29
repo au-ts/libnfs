@@ -544,15 +544,12 @@ rpc_service(struct rpc_context *rpc, int revents)
 
 	}
 
-    // write_green("rpc maybe connected\n");
 	if (rpc->is_connected == 0 && rpc->fd != -1 && (revents & POLLOUT)) {
-        write_green("rpc connected");
 		int err = 0;
 		socklen_t err_size = sizeof(err);
 
 		if (getsockopt(rpc->fd, SOL_SOCKET, SO_ERROR,
 				(char *)&err, &err_size) != 0 || err != 0) {
-            write_red("rpc connected error");
 			if (err == 0) {
 				err = errno;
 			}
@@ -565,7 +562,6 @@ rpc_service(struct rpc_context *rpc, int revents)
 
 		rpc->is_connected = 1;
 		RPC_LOG(rpc, 2, "connection established on fd %d", rpc->fd);
-        write_green("rpc connected success, calling connect cb\n");
 		maybe_call_connect_cb(rpc, RPC_STATUS_SUCCESS);
 		return 0;
 	}
@@ -679,7 +675,6 @@ rpc_connect_sockaddr_async(struct rpc_context *rpc)
 		rpc->old_fd = 0;
 #endif
 	}
-    write_green("rpc_connect_sockaddr_async 1\n");
 	/* Some systems allow you to set capabilities on an executable
 	 * to allow the file to be executed with privilege to bind to
 	 * privileged system ports, even if the user is not root.
@@ -744,7 +739,6 @@ rpc_connect_sockaddr_async(struct rpc_context *rpc)
         //                             socksize);
 
 // 		do {
-//             write_green("rpc_connect_sockaddr_async: start loop\n");
 // 			rc = -1;
 // 			port = htons(firstPort + portOfs);
 // 			portOfs = (portOfs + 1) % portCount;
@@ -765,10 +759,8 @@ rpc_connect_sockaddr_async(struct rpc_context *rpc)
 
 	// rpc->is_nonblocking = !set_nonblocking(rpc->fd);
 	// set_nolinger(rpc->fd);
-    write_green("rpc_connect_sockaddr_async: before connect\n");
 	if (connect(rpc->fd, (struct sockaddr *)s, socksize) != 0 &&
             errno != EINPROGRESS) {
-        write_red("rpc_connect_sockaddr_async: connect failed\n");
 		rpc_set_error(rpc, "connect() to server failed. %s(%d)",
                               strerror(errno), errno);
 		return -1;
