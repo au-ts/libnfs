@@ -785,7 +785,7 @@ rpc_set_sockaddr(struct rpc_context *rpc, const char *server, int port)
     struct sockaddr_in *addr = (struct sockaddr_in *)ai_mock->ai_addr;
     addr->sin_family = AF_INET;
     addr->sin_port = htons(port);
-    inet_aton("10.13.0.11", &addr->sin_addr);
+    inet_aton("10.13.0.11", &addr->sin_addr); 
     ai_mock->ai_next = NULL;
     ai = ai_mock;
 
