@@ -65,10 +65,10 @@ include(cmake/ConfigureChecks.cmake)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}
                     include
                     include/nfsc
-                    "/host/sDDF/echo_server/musl/build/include")
+                    "/host/sDDF/echo_server/musllibc/build/include")
 
 # list of system libs (sockets/etc) to be linked on this system
-set(SYSTEM_LIBRARIES "/host/sDDF/echo_server/musl/build/lib/libc.a")
+set(SYSTEM_LIBRARIES "/host/sDDF/echo_server/musllibc/build/lib/libc.a")
 # list of core (static) libraries built in current configuration (used by lib/CMakeLists.txt)
 set(CORE_LIBRARIES "" CACHE INTERNAL "")
 
