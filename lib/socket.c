@@ -406,8 +406,7 @@ rpc_read_from_socket(struct rpc_context *rpc)
 				return -1;
 			}
 
-            // TODO fix freeing and malloc
-			// free(buf);
+			free(buf);
 		}
 	} while (rpc->is_nonblocking && rpc->waitpdu_len > 0);
 

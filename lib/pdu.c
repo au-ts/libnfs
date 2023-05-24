@@ -223,15 +223,15 @@ void rpc_free_pdu(struct rpc_context *rpc, struct rpc_pdu *pdu)
     // write_ptr_addr(rpc);
 	assert(rpc->magic == RPC_CONTEXT_MAGIC);
 
-	// free(pdu->outdata.data);
+	free(pdu->outdata.data);
 
 	if (pdu->zdr_decode_buf != NULL) {
-        // zdr_free(pdu->zdr_decode_fn, pdu->zdr_decode_buf);
+        zdr_free(pdu->zdr_decode_fn, pdu->zdr_decode_buf);
 	}
 
-	// zdr_destroy(&pdu->zdr);
+	zdr_destroy(&pdu->zdr);
 
-	// free(pdu);
+	free(pdu);
 }
 
 void rpc_set_next_xid(struct rpc_context *rpc, uint32_t xid)
