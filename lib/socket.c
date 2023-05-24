@@ -756,8 +756,8 @@ rpc_connect_sockaddr_async(struct rpc_context *rpc)
 // 		} while (rc != 0 && portOfs != startOfs);
 	}
 
-	// rpc->is_nonblocking = !set_nonblocking(rpc->fd);
-	// set_nolinger(rpc->fd);
+	rpc->is_nonblocking = !set_nonblocking(rpc->fd);
+	set_nolinger(rpc->fd);
 	if (connect(rpc->fd, (struct sockaddr *)s, socksize) != 0 &&
             errno != EINPROGRESS) {
 		rpc_set_error(rpc, "connect() to server failed. %s(%d)",

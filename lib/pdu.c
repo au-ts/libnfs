@@ -648,9 +648,6 @@ int rpc_process_pdu(struct rpc_context *rpc, char *buf, int size)
 			rpc_set_error(rpc, "rpc_procdess_reply failed");
 		}
 		zdr_destroy(&zdr);
-        if (rpc == NULL) {
-            return -1;
-        }
 		if (rpc->is_udp == 0 || rpc->is_broadcast == 0) {
 			rpc_free_pdu(rpc, pdu);
 		}
