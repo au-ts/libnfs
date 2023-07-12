@@ -4,6 +4,7 @@ set(CMAKE_C_COMPILER aarch64-none-elf-gcc)
 set(CMAKE_CXX_COMPILER aarch64-none-elf-g++)
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_C_FLAGS "-nostdinc -isystem=/host/sDDF/echo_server/musllibc/build/include")
 
 project(libnfs
         LANGUAGES C
