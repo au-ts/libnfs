@@ -4,7 +4,7 @@ set(CMAKE_C_COMPILER aarch64-none-elf-gcc)
 set(CMAKE_CXX_COMPILER aarch64-none-elf-g++)
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_C_FLAGS "-nostdinc -isystem=/host/sDDF/echo_server/musllibc/build/include")
+set(CMAKE_C_FLAGS "-nostdinc -isystem=../musllibc/build/include")
 
 project(libnfs
         LANGUAGES C
@@ -66,10 +66,10 @@ include(cmake/ConfigureChecks.cmake)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}
                     include
                     include/nfsc
-                    "/host/sDDF/echo_server/musllibc/build/include")
+                    "../musllibc/build/include")
 
 # list of system libs (sockets/etc) to be linked on this system
-set(SYSTEM_LIBRARIES "/host/sDDF/echo_server/musllibc/build/lib/libc.a")
+set(SYSTEM_LIBRARIES "../musllibc/build/lib/libc.a")
 # list of core (static) libraries built in current configuration (used by lib/CMakeLists.txt)
 set(CORE_LIBRARIES "" CACHE INTERNAL "")
 
