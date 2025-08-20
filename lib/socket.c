@@ -1054,20 +1054,11 @@ rpc_set_sockaddr(struct rpc_context *rpc, const char *server, int port)
 {
 	struct addrinfo *ai = NULL;
 
-
-    // Mock getaddrinfo response for a host at ip 10.16.1.30
-    struct addrinfo *ai_mock = malloc(sizeof(struct addrinfo));
-    ai_mock->ai_family = AF_INET;
-    ai_mock->ai_socktype = SOCK_STREAM;
-    ai_mock->ai_protocol = IPPROTO_TCP;
-    ai_mock->ai_addrlen = sizeof(struct sockaddr_in);
-    ai_mock->ai_addr = malloc(sizeof(struct sockaddr_in));
-    struct sockaddr_in *addr = (struct sockaddr_in *)ai_mock->ai_addr;
-    addr->sin_family = AF_INET;
-    addr->sin_port = htons(port);
-    inet_aton("10.13.0.11", &addr->sin_addr); 
-    ai_mock->ai_next = NULL;
-    ai = ai_mock;
+    if (getaddrinfo(server, NULL, NULL, &ai) != 0) {
+		rpc_set_error(rpc, "Invalid address:%s. "
+			      "Can not resolv into IPv4/v6 structure.", server);
+		return -1;
+ 	}
 
 	switch (ai->ai_family) {
 	case AF_INET:
